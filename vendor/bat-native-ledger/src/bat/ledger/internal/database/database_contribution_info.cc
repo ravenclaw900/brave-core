@@ -661,6 +661,9 @@ void DatabaseContributionInfo::OnGetOneTimeTips(
         GetInt64Column(record_pointer, 6));
     info->provider = GetStringColumn(record_pointer, 7);
 
+    // TODO(zenparsing) [blocking] server_publisher_info may have
+    // outdated or missing records.
+
     list.push_back(std::move(info));
   }
 

@@ -265,16 +265,8 @@ struct ServerPublisherInfo {
   PublisherStatus status = PublisherStatus.NOT_VERIFIED;
   bool excluded = false;
   string address;
+  uint64 updated_at;
   PublisherBanner? banner;
-};
-
-// This is used so that we don't have copy lock as we will handle
-// banner in a separate save call
-struct ServerPublisherPartial {
-  string publisher_key;
-  PublisherStatus status = PublisherStatus.NOT_VERIFIED;
-  bool excluded = false;
-  string address;
 };
 
 struct TransferFee {

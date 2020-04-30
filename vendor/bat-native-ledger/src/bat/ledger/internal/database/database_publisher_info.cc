@@ -282,6 +282,9 @@ void DatabasePublisherInfo::OnGetRecord(
   info->excluded = static_cast<ledger::PublisherExclude>(
       GetIntColumn(record, 6));
 
+  // TODO(zenparsing) [blocking] server_publisher_info may have
+  // outdated or missing records.
+
   callback(ledger::Result::LEDGER_OK, std::move(info));
 }
 

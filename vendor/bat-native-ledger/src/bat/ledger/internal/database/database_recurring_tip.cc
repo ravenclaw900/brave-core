@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <functional>
 #include <map>
 #include <utility>
 
@@ -267,6 +268,9 @@ void DatabaseRecurringTip::OnGetAllRecords(
     info->status = static_cast<ledger::mojom::PublisherStatus>(
         GetInt64Column(record_pointer, 6));
     info->provider = GetStringColumn(record_pointer, 7);
+
+    // TODO(zenparsing) [blocking] server_publisher_info may have
+    // outdated or missing records.
 
     list.push_back(std::move(info));
   }

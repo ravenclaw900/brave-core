@@ -701,6 +701,9 @@ void DatabaseActivityInfo::OnGetRecordsList(
     list.push_back(std::move(info));
   }
 
+  // TODO(zenparsing) [blocking] server_publisher_info may have
+  // outdated or missing records.
+
   callback(std::move(list));
 }
 

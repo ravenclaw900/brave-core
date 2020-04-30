@@ -57,6 +57,36 @@ bool DatabaseServerPublisherInfo::CreateIndexV7(
   return this->InsertIndex(transaction, kTableName, "publisher_key");
 }
 
+bool DatabaseServerPublisherInfo::CreateTableV23(
+    ledger::DBTransaction* transaction) {
+  DCHECK(transaction);
+
+  const std::string query = base::StringPrintf(
+      "CREATE TABLE %s "
+      "("
+      "publisher_key LONGVARCHAR PRIMARY KEY NOT NULL UNIQUE,"
+      "status INTEGER DEFAULT 0 NOT NULL,"
+      "excluded INTEGER DEFAULT 0 NOT NULL,"
+      "address TEXT NOT NULL,"
+      "updated_at INTEGER NOT NULL"
+      ")",
+      kTableName);
+
+  auto command = ledger::DBCommand::New();
+  command->type = ledger::DBCommand::Type::EXECUTE;
+  command->command = query;
+  transaction->commands.push_back(std::move(command));
+
+  return true;
+}
+
+bool DatabaseServerPublisherInfo::CreateIndexV23(
+    ledger::DBTransaction* transaction) {
+  DCHECK(transaction);
+
+  return this->InsertIndex(transaction, kTableName, "publisher_key");
+}
+
 bool DatabaseServerPublisherInfo::Migrate(
     ledger::DBTransaction* transaction,
     const int target) {
@@ -68,6 +98,9 @@ bool DatabaseServerPublisherInfo::Migrate(
     }
     case 15: {
       return MigrateToV15(transaction);
+    }
+    case 23: {
+      return MigrateToV23(transaction);
     }
     default: {
       return true;
@@ -108,78 +141,53 @@ bool DatabaseServerPublisherInfo::MigrateToV15(
   return banner_->Migrate(transaction, 15);
 }
 
-void DatabaseServerPublisherInfo::DeleteAll(ledger::ResultCallback callback) {
-  auto transaction = ledger::DBTransaction::New();
-  const std::string query = base::StringPrintf("DELETE FROM %s", kTableName);
+bool DatabaseServerPublisherInfo::MigrateToV23(
+    ledger::DBTransaction* transaction) {
+  DCHECK(transaction);
 
-  auto command = ledger::DBCommand::New();
-  command->type = ledger::DBCommand::Type::EXECUTE;
-  command->command = query;
-  transaction->commands.push_back(std::move(command));
-
-  auto transaction_callback = std::bind(&OnResultCallback,
-      _1,
-      callback);
-
-  ledger_->RunDBTransaction(std::move(transaction), transaction_callback);
-}
-
-void DatabaseServerPublisherInfo::InsertOrUpdatePartialList(
-    const std::vector<ledger::ServerPublisherPartial>& list,
-    ledger::ResultCallback callback) {
-  if (list.empty()) {
-    BLOG(1, "List is empty");
-    callback(ledger::Result::LEDGER_OK);
-    return;
+  // TODO(zenparsing): [blocking] We need to vacuum after
+  // this operation to free disk space.
+  if (!DropTable(transaction, kTableName)) {
+    return false;
   }
 
-  const std::string base_query = base::StringPrintf(
-      "INSERT OR REPLACE INTO %s VALUES ",
+  if (!CreateTableV23(transaction)) {
+    return false;
+  }
+
+  if (!CreateIndexV23(transaction)) {
+    return false;
+  }
+
+  return banner_->Migrate(transaction, 23);
+}
+
+void DatabaseServerPublisherInfo::InsertOrUpdate(
+    const ledger::ServerPublisherInfo& server_info,
+    ledger::ResultCallback callback) {
+  DCHECK(!server_info.publisher_key.empty());
+
+  auto transaction = ledger::DBTransaction::New();
+
+  auto command = ledger::DBCommand::New();
+  command->type = ledger::DBCommand::Type::RUN;
+  command->command = base::StringPrintf(
+      "INSERT OR REPLACE INTO %s "
+      "(publisher_key, status, excluded, address, updated_at) "
+      "VALUES (?, ?, ?, ?, ?)",
       kTableName);
 
-  size_t i = 0;
-  std::string main_query = base_query;
-  for (const auto& info : list) {
-    if (i == kBatchLimit) {
-      main_query += base_query;
-      i = 0;
-    }
-
-    main_query += base::StringPrintf(
-        R"(("%s",%d,%d,"%s"))",
-        info.publisher_key.c_str(),
-        static_cast<int>(info.status),
-        info.excluded,
-        info.address.c_str());
-    main_query += (i == kBatchLimit - 1) ? ";" : ",";
-    i++;
-  }
-
-  if (main_query.empty()) {
-    callback(ledger::Result::LEDGER_ERROR);
-    return;
-  }
-
-  main_query.pop_back();
-
-  auto transaction = ledger::DBTransaction::New();
-  auto command = ledger::DBCommand::New();
-  command->type = ledger::DBCommand::Type::EXECUTE;
-  command->command = main_query;
+  BindString(command.get(), 0, server_info.publisher_key);
+  BindInt(command.get(), 1, static_cast<int>(server_info.status));
+  BindBool(command.get(), 2, server_info.excluded);
+  BindString(command.get(), 3, server_info.address);
+  BindInt64(command.get(), 4, server_info.updated_at);
 
   transaction->commands.push_back(std::move(command));
+  banner_->InsertOrUpdate(transaction.get(), server_info);
 
-  auto transaction_callback = std::bind(&OnResultCallback,
-      _1,
-      callback);
-
-  ledger_->RunDBTransaction(std::move(transaction), transaction_callback);
-}
-
-void DatabaseServerPublisherInfo::InsertOrUpdateBannerList(
-    const std::vector<ledger::PublisherBanner>& list,
-    ledger::ResultCallback callback) {
-  banner_->InsertOrUpdateList(list, callback);
+  ledger_->RunDBTransaction(std::move(transaction),
+      std::bind(&OnResultCallback, _1, callback));
 }
 
 void DatabaseServerPublisherInfo::GetRecord(
@@ -208,7 +216,7 @@ void DatabaseServerPublisherInfo::OnGetRecordBanner(
     ledger::GetServerPublisherInfoCallback callback) {
   auto transaction = ledger::DBTransaction::New();
   const std::string query = base::StringPrintf(
-      "SELECT status, excluded, address "
+      "SELECT status, excluded, address, updated_at "
       "FROM %s WHERE publisher_key=?",
       kTableName);
 
@@ -221,7 +229,8 @@ void DatabaseServerPublisherInfo::OnGetRecordBanner(
   command->record_bindings = {
       ledger::DBCommand::RecordBindingType::INT_TYPE,
       ledger::DBCommand::RecordBindingType::BOOL_TYPE,
-      ledger::DBCommand::RecordBindingType::STRING_TYPE
+      ledger::DBCommand::RecordBindingType::STRING_TYPE,
+      ledger::DBCommand::RecordBindingType::INT64_TYPE
   };
 
   transaction->commands.push_back(std::move(command));
@@ -266,6 +275,7 @@ void DatabaseServerPublisherInfo::OnGetRecord(
       GetIntColumn(record, 0));
   info->excluded = GetBoolColumn(record, 1);
   info->address = GetStringColumn(record, 2);
+  info->updated_at = GetInt64Column(record, 3);
   info->banner = banner.Clone();
 
   callback(std::move(info));

@@ -450,6 +450,9 @@ void DatabaseContributionInfoPublishers::OnGetContributionPublisherInfoMap(
         GetInt64Column(record_pointer, 6));
     publisher->provider = GetStringColumn(record_pointer, 7);
 
+    // TODO(zenparsing) [blocking] server_publisher_info may have
+    // outdated or missing records.
+
     pair_list.push_back(std::make_pair(
         GetStringColumn(record_pointer, 0),
         std::move(publisher)));

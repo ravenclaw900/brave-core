@@ -521,6 +521,9 @@ void DatabasePendingContribution::OnGetAllRecords(
         info->added_date +
         braveledger_ledger::_pending_contribution_expiration;
 
+    // TODO(zenparsing) [blocking] server_publisher_info may have
+    // outdated or missing records.
+
     list.push_back(std::move(info));
   }
 
