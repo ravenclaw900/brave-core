@@ -53,7 +53,7 @@ bool DatabaseContributionQueue::CreateTableV9(
   return true;
 }
 
-bool DatabaseContributionQueue::CreateTableV23(
+bool DatabaseContributionQueue::CreateTableV24(
     ledger::DBTransaction* transaction) {
   DCHECK(transaction);
 
@@ -87,8 +87,8 @@ bool DatabaseContributionQueue::Migrate(
     case 15: {
       return MigrateToV15(transaction);
     }
-    case 23: {
-      return MigrateToV23(transaction);
+    case 24: {
+      return MigrateToV24(transaction);
     }
     default: {
       return true;
@@ -125,7 +125,7 @@ bool DatabaseContributionQueue::MigrateToV15(
   return publishers_->Migrate(transaction, 15);
 }
 
-bool DatabaseContributionQueue::MigrateToV23(
+bool DatabaseContributionQueue::MigrateToV24(
     ledger::DBTransaction* transaction) {
   DCHECK(transaction);
 
@@ -138,13 +138,13 @@ bool DatabaseContributionQueue::MigrateToV23(
     return false;
   }
 
-  if (!CreateTableV23(transaction)) {
+  if (!CreateTableV24(transaction)) {
     BLOG(0, "Table couldn't be created");
     return false;
   }
 
   // Migrate the contribution_queue table
-  const std::string query = base::StringPrintf(
+  std::string query = base::StringPrintf(
       "INSERT INTO %s "
       "(contribution_queue_id, type, amount, partial, created_at) "
       "SELECT CAST(contribution_queue_id AS TEXT), type, amount, partial, "
@@ -162,7 +162,7 @@ bool DatabaseContributionQueue::MigrateToV23(
     return false;
   }
 
-  if (!publishers_->Migrate(transaction, 23)) {
+  if (!publishers_->Migrate(transaction, 24)) {
     BLOG(0, "Table couldn't be migrated");
     return false;
   }

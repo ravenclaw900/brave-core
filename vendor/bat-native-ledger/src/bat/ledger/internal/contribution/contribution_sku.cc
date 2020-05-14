@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_number_conversions.h"
 #include "bat/ledger/global_constants.h"
 #include "bat/ledger/internal/common/bind_util.h"
 #include "bat/ledger/internal/contribution/contribution_sku.h"
@@ -154,21 +155,178 @@ void ContributionSKU::Start(
     return;
   }
 
-  auto get_callback = std::bind(&ContributionSKU::GetContributionInfo,
+  auto get_callback = std::bind(&ContributionSKU::PrepareTokens,
       this,
       _1,
+      _2,
       item,
       *wallet,
       callback);
 
-  ledger_->GetContributionInfo(contribution_id, get_callback);
+  GetContributionInfoAndUnblindedTokens(contribution_id, get_callback);
 }
 
-void ContributionSKU::GetContributionInfo(
+void ContributionSKU::GetContributionInfoAndUnblindedTokens(
+    const std::string& contribution_id,
+    GetContributionInfoAndUnblindedTokensCallback callback) {
+  auto get_callback = std::bind(&ContributionSKU::OnUnblindedTokens,
+      this,
+      _1,
+      contribution_id,
+      callback);
+  ledger_->GetSpendableUnblindedTokensByBatchTypes(
+      {ledger::CredsBatchType::PROMOTION},
+      get_callback);
+}
+
+void ContributionSKU::OnUnblindedTokens(
+    ledger::UnblindedTokenList list,
+    const std::string& contribution_id,
+    GetContributionInfoAndUnblindedTokensCallback callback) {
+  if (list.empty()) {
+    BLOG(0, "Token list is empty");
+    callback(nullptr, {});
+    return;
+  }
+
+  std::vector<ledger::UnblindedToken> converted_list;
+  for (const auto& item : list) {
+    ledger::UnblindedToken new_item;
+    new_item.id = item->id;
+    new_item.token_value = item->token_value;
+    new_item.public_key = item->public_key;
+    new_item.value = item->value;
+    new_item.creds_id = item->creds_id;
+    new_item.expires_at = item->expires_at;
+
+    converted_list.push_back(new_item);
+  }
+
+  ledger_->GetContributionInfo(contribution_id,
+      std::bind(&ContributionSKU::OnGetContributionInfo,
+                this,
+                _1,
+                converted_list,
+                callback));
+}
+
+void ContributionSKU::PrepareTokens(
     ledger::ContributionInfoPtr contribution,
+    const std::vector<ledger::UnblindedToken>& list,
     const ledger::SKUOrderItem& item,
     const ledger::ExternalWallet& wallet,
     ledger::ResultCallback callback) {
+  if (!contribution) {
+    BLOG(0, "Contribution not found");
+    callback(ledger::Result::LEDGER_ERROR);
+    return;
+  }
+
+  if (list.empty()) {
+    BLOG(0, "Not enough funds");
+    callback(ledger::Result::NOT_ENOUGH_FUNDS);
+    return;
+  }
+
+  double current_amount = 0.0;
+  std::vector<ledger::UnblindedToken> token_list;
+  for (const auto& item : list) {
+    if (current_amount >= contribution->amount) {
+      break;
+    }
+
+    current_amount += item.value;
+    token_list.push_back(item);
+  }
+
+  if (current_amount < contribution->amount) {
+    callback(ledger::Result::NOT_ENOUGH_FUNDS);
+    BLOG(0, "Not enough funds");
+    return;
+  }
+
+  const std::string contribution_id = contribution->contribution_id;
+  const std::string contribution_string =
+      braveledger_bind_util::FromContributionToString(std::move(contribution));
+
+  auto reserved_callback = std::bind(
+      &ContributionSKU::OnMarkUnblindedTokensAsReserved,
+      this,
+      _1,
+      token_list,
+      contribution_string,
+      item,
+      wallet,
+      callback);
+
+  std::vector<std::string> token_id_list;
+  for (const auto& item : token_list) {
+    token_id_list.push_back(base::NumberToString(item.id));
+  }
+
+  ledger_->MarkUnblindedTokensAsReserved(
+      token_id_list,
+      contribution_id,
+      reserved_callback);
+}
+
+void ContributionSKU::OnMarkUnblindedTokensAsReserved(
+    const ledger::Result result,
+    const std::vector<ledger::UnblindedToken>& list,
+    const std::string& contribution_string,
+    const ledger::SKUOrderItem& item,
+    const ledger::ExternalWallet& wallet,
+    ledger::ResultCallback callback) {
+  if (result != ledger::Result::LEDGER_OK) {
+    BLOG(0, "Failed to reserve unblinded tokens");
+    callback(ledger::Result::LEDGER_ERROR);
+    return;
+  }
+
+  auto contribution = braveledger_bind_util::FromStringToContribution(
+      contribution_string);
+  if (!contribution) {
+    BLOG(0, "Contribution was not converted successfully");
+    return;
+  }
+
+  const std::string contribution_id = contribution->contribution_id;
+
+  auto save_callback = std::bind(&ContributionSKU::ReserveStepSaved,
+      this,
+      _1,
+      list,
+      contribution_string,
+      item,
+      wallet,
+      callback);
+
+  ledger_->UpdateContributionInfoStep(
+      contribution_id,
+      ledger::ContributionStep::STEP_RESERVE,
+      save_callback);
+}
+
+void ContributionSKU::ReserveStepSaved(
+    const ledger::Result result,
+    const std::vector<ledger::UnblindedToken>& list,
+    const std::string& contribution_string,
+    const ledger::SKUOrderItem& item,
+    const ledger::ExternalWallet& wallet,
+    ledger::ResultCallback callback) {
+  if (result != ledger::Result::LEDGER_OK) {
+    BLOG(0, "Reserve step was not saved");
+    callback(ledger::Result::RETRY);
+    return;
+  }
+
+  auto contribution =
+      braveledger_bind_util::FromStringToContribution(contribution_string);
+  if (!contribution) {
+    BLOG(0, "Contribution was not converted successfully");
+    return;
+  }
+
   if (!contribution) {
     BLOG(0, "Contribution not found");
     callback(ledger::Result::LEDGER_ERROR);
@@ -203,6 +361,13 @@ void ContributionSKU::GetContributionInfo(
       ledger::ExternalWallet::New(wallet),
       process_callback,
       contribution->contribution_id);
+}
+
+void ContributionSKU::OnGetContributionInfo(
+    ledger::ContributionInfoPtr contribution,
+    const std::vector<ledger::UnblindedToken>& list,
+    GetContributionInfoAndUnblindedTokensCallback callback) {
+  callback(std::move(contribution), list);
 }
 
 void ContributionSKU::GetOrder(
@@ -318,8 +483,8 @@ void ContributionSKU::Merchant(
       transaction,
       callback);
 
-  ledger_->GetSpendableUnblindedTokensByBatchTypes(
-      {ledger::CredsBatchType::PROMOTION},
+  ledger_->GetReservedUnblindedTokens(
+      transaction.order_id,
       get_callback);
 }
 
@@ -345,8 +510,16 @@ void ContributionSKU::GetUnblindedTokens(
   }
 
   if (current_amount < transaction.amount) {
-    BLOG(0, "Not enough funds");
-    callback(ledger::Result::NOT_ENOUGH_FUNDS, "");
+    BLOG(0, "Not enough funds, retrying previous step");
+    auto save_callback = std::bind(&ContributionSKU::RetryPreviousStepSaved,
+        this,
+        _1,
+        callback);
+
+    ledger_->UpdateContributionInfoStep(
+        transaction.order_id,
+        ledger::ContributionStep::STEP_PREPARE,
+        save_callback);
     return;
   }
 
@@ -356,7 +529,7 @@ void ContributionSKU::GetUnblindedTokens(
   redeem.token_list = token_list;
   redeem.order_id = transaction.order_id;
 
-  auto get_callback = std::bind(&ContributionSKU::GerOrderMerchant,
+  auto get_callback = std::bind(&ContributionSKU::GetOrderMerchant,
       this,
       _1,
       redeem,
@@ -365,7 +538,19 @@ void ContributionSKU::GetUnblindedTokens(
   ledger_->GetSKUOrder(transaction.order_id, get_callback);
 }
 
-void ContributionSKU::GerOrderMerchant(
+void ContributionSKU::RetryPreviousStepSaved(
+    const ledger::Result result,
+    ledger::TransactionCallback callback) {
+  if (result != ledger::Result::LEDGER_OK) {
+    BLOG(0, "Previous step not saved");
+    callback(ledger::Result::LEDGER_ERROR, "");
+    return;
+  }
+
+  callback(ledger::Result::RETRY, "");
+}
+
+void ContributionSKU::GetOrderMerchant(
     ledger::SKUOrderPtr order,
     const braveledger_credentials::CredentialsRedeem& redeem,
     ledger::TransactionCallback callback) {

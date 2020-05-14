@@ -80,7 +80,7 @@ bool DatabaseContributionQueuePublishers::CreateTableV15(
   return true;
 }
 
-bool DatabaseContributionQueuePublishers::CreateTableV23(
+bool DatabaseContributionQueuePublishers::CreateTableV24(
     ledger::DBTransaction* transaction) {
   DCHECK(transaction);
 
@@ -114,7 +114,7 @@ bool DatabaseContributionQueuePublishers::CreateIndexV15(
   return this->InsertIndex(transaction, kTableName, "publisher_key");
 }
 
-bool DatabaseContributionQueuePublishers::CreateIndexV23(
+bool DatabaseContributionQueuePublishers::CreateIndexV24(
     ledger::DBTransaction* transaction) {
   DCHECK(transaction);
 
@@ -140,8 +140,8 @@ bool DatabaseContributionQueuePublishers::Migrate(
     case 15: {
       return MigrateToV15(transaction);
     }
-    case 23: {
-      return MigrateToV23(transaction);
+    case 24: {
+      return MigrateToV24(transaction);
     }
     default: {
       return true;
@@ -207,7 +207,7 @@ bool DatabaseContributionQueuePublishers::MigrateToV15(
   return true;
 }
 
-bool DatabaseContributionQueuePublishers::MigrateToV23(
+bool DatabaseContributionQueuePublishers::MigrateToV24(
     ledger::DBTransaction* transaction) {
   DCHECK(transaction);
 
@@ -230,12 +230,12 @@ bool DatabaseContributionQueuePublishers::MigrateToV23(
   command->command = query;
   transaction->commands.push_back(std::move(command));
 
-  if (!CreateTableV23(transaction)) {
+  if (!CreateTableV24(transaction)) {
     BLOG(0, "Table couldn't be created");
     return false;
   }
 
-  if (!CreateIndexV23(transaction)) {
+  if (!CreateIndexV24(transaction)) {
     BLOG(0, "Index couldn't be created");
     return false;
   }

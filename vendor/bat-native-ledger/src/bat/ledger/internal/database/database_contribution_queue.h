@@ -32,13 +32,13 @@ class DatabaseContributionQueue: public DatabaseTable {
  private:
   bool CreateTableV9(ledger::DBTransaction* transaction);
 
-  bool CreateTableV23(ledger::DBTransaction* transaction);
+  bool CreateTableV24(ledger::DBTransaction* transaction);
 
   bool MigrateToV9(ledger::DBTransaction* transaction);
 
   bool MigrateToV15(ledger::DBTransaction* transaction);
 
-  bool MigrateToV23(ledger::DBTransaction* transaction);
+  bool MigrateToV24(ledger::DBTransaction* transaction);
 
   void OnInsertOrUpdate(
       ledger::DBCommandResponsePtr response,

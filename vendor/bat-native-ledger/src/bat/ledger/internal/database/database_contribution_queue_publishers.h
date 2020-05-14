@@ -37,17 +37,17 @@ class DatabaseContributionQueuePublishers: public DatabaseTable {
 
   bool CreateTableV15(ledger::DBTransaction* transaction);
 
-  bool CreateTableV23(ledger::DBTransaction* transaction);
+  bool CreateTableV24(ledger::DBTransaction* transaction);
 
   bool CreateIndexV15(ledger::DBTransaction* transaction);
 
-  bool CreateIndexV23(ledger::DBTransaction* transaction);
+  bool CreateIndexV24(ledger::DBTransaction* transaction);
 
   bool MigrateToV9(ledger::DBTransaction* transaction);
 
   bool MigrateToV15(ledger::DBTransaction* transaction);
 
-  bool MigrateToV23(ledger::DBTransaction* transaction);
+  bool MigrateToV24(ledger::DBTransaction* transaction);
 
   void OnGetRecordsByQueueId(
       ledger::DBCommandResponsePtr response,

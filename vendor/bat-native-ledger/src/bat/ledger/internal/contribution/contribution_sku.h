@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bat/ledger/ledger.h"
 #include "bat/ledger/internal/contribution/contribution.h"
@@ -19,6 +20,10 @@ class LedgerImpl;
 }
 
 namespace braveledger_contribution {
+
+using GetContributionInfoAndUnblindedTokensCallback = std::function<void(
+    ledger::ContributionInfoPtr contribution,
+    const std::vector<ledger::UnblindedToken>& list)>;
 
 class ContributionSKU {
  public:
@@ -52,8 +57,39 @@ class ContributionSKU {
       ledger::ExternalWalletPtr wallet,
       ledger::ResultCallback callback);
 
-  void GetContributionInfo(
+  void OnGetContributionInfo(
       ledger::ContributionInfoPtr contribution,
+      const std::vector<ledger::UnblindedToken>& list,
+      GetContributionInfoAndUnblindedTokensCallback callback);
+
+  void GetContributionInfoAndUnblindedTokens(
+      const std::string& contribution_id,
+      GetContributionInfoAndUnblindedTokensCallback callback);
+
+  void OnUnblindedTokens(
+      ledger::UnblindedTokenList list,
+      const std::string& contribution_id,
+      GetContributionInfoAndUnblindedTokensCallback callback);
+
+  void OnMarkUnblindedTokensAsReserved(
+      const ledger::Result result,
+      const std::vector<ledger::UnblindedToken>& list,
+      const std::string& contribution_string,
+      const ledger::SKUOrderItem& item,
+      const ledger::ExternalWallet& wallet,
+      ledger::ResultCallback callback);
+
+  void ReserveStepSaved(
+      const ledger::Result result,
+      const std::vector<ledger::UnblindedToken>& list,
+      const std::string& contribution_string,
+      const ledger::SKUOrderItem& item,
+      const ledger::ExternalWallet& wallet,
+      ledger::ResultCallback callback);
+
+  void PrepareTokens(
+      ledger::ContributionInfoPtr contribution,
+      const std::vector<ledger::UnblindedToken>& list,
       const ledger::SKUOrderItem& item,
       const ledger::ExternalWallet& wallet,
       ledger::ResultCallback callback);
@@ -90,7 +126,7 @@ class ContributionSKU {
       const ledger::SKUTransaction& transaction,
       ledger::TransactionCallback callback);
 
-  void GerOrderMerchant(
+  void GetOrderMerchant(
       ledger::SKUOrderPtr order,
       const braveledger_credentials::CredentialsRedeem& redeem,
       ledger::TransactionCallback callback);
@@ -120,6 +156,10 @@ class ContributionSKU {
       ledger::ContributionInfoPtr contribution,
       ledger::SKUOrderPtr order,
       ledger::ResultCallback callback);
+
+  void RetryPreviousStepSaved(
+      const ledger::Result result,
+      ledger::TransactionCallback callback);
 
   bat_ledger::LedgerImpl* ledger_;  // NOT OWNED
   Contribution* contribution_;   // NOT OWNED
