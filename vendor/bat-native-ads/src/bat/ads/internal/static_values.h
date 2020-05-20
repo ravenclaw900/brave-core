@@ -42,6 +42,10 @@ const uint64_t kSustainAdNotificationInteractionAfterSeconds = 10;
 const uint64_t kDefaultCatalogPing = 2 * base::Time::kSecondsPerHour;
 const uint64_t kDebugCatalogPing = 15 * base::Time::kSecondsPerMinute;
 
+const char kGetStateAllowedForRegion[] = "GB";  // TODO(Moritz Haller) just for development change to "US"  NOLINT
+const uint64_t kDefaultGetStatePing = 24 * base::Time::kSecondsPerHour;
+const uint64_t kDebugGetStatePing = 2 * base::Time::kSecondsPerMinute;
+
 const int kDebugAdConversionFrequency = 10 * base::Time::kSecondsPerMinute;
 const int kAdConversionFrequency =
     base::Time::kHoursPerDay * base::Time::kSecondsPerHour;
@@ -59,6 +63,8 @@ const int kDoNotDisturbFromHour = 21;  // 9pm
 const int kDoNotDisturbToHour = 6;     // 6am
 
 const uint64_t kRetryDownloadingCatalogAfterSeconds =
+    1 * base::Time::kSecondsPerMinute;
+const uint64_t kRetryGettingStateAfterSeconds =
     1 * base::Time::kSecondsPerMinute;
 
 const char kUntargetedPageClassification[] = "untargeted";

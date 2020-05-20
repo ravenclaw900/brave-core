@@ -23,21 +23,80 @@ AdsLocaleHelper::AdsLocaleHelper(
 
 AdsLocaleHelper::~AdsLocaleHelper() = default;
 
-void AdsLocaleHelper::GetState() {
-  auto callback = std::bind(&AdsLocaleHelper::OnStateReceived,
+void AdsLocaleHelper::GetLocale() {
+  if (retry_timer_.IsRunning()) {
+    return;
+  }
+
+  BLOG(1, "Get ads locale");
+  BLOG(2, "GET " << GETSTATE_PATH);
+
+  auto callback = std::bind(&AdsLocaleHelper::OnLocaleReceived,
       this, url_, _1, _2, _3);
   ads_client_->URLRequest(url_, {}, "", "", URLRequestMethod::GET, callback);
 
   return;
 }
 
-void AdsLocaleHelper::OnStateReceived(
+void AdsLocaleHelper::OnLocaleReceived(
     const std::string& url,
     const int response_status_code,
     const std::string& response,
     const std::map<std::string, std::string>& headers) {
-  // TODO(Moritz Haller): Impl.
   BLOG(7, UrlResponseToString(url, response_status_code, response, headers));
+
+  auto should_retry = false;
+
+  if (response_status_code / 100 == 2) {
+    if (!response.empty()) {
+      BLOG(1, "Successfully received locale");
+    }
+
+    if (!ProcessLocale(response)) {
+      should_retry = true;
+    }
+  } else if (response_status_code == 304) {
+    BLOG(1, "Locale is up to date");
+  } else {
+    BLOG(1, "Failed to get locale");
+
+    should_retry = true;
+  }
+
+  // TODO(Moritz Haller): how to manually test? -> tested with charles and
+  // map remote
+  if (should_retry) {
+    RetryGettingLocale();
+    return;
+  }
+
+  retry_timer_.Stop();
+
+  GetLocaleAfterDelay();
+}
+
+bool AdsLocaleHelper::ProcessLocale(
+    const std::string& json) {
+  BLOG(1, "Parsing locale " << json);
+  return true;
+}
+
+void AdsLocaleHelper::RetryGettingLocale() {
+  const base::Time time = retry_timer_.StartWithBackoff(
+      kRetryGettingStateAfterSeconds,
+          base::BindOnce(&AdsLocaleHelper::GetLocale, base::Unretained(this)));
+
+  BLOG(1, "Retry getting locale " << FriendlyDateAndTime(time));
+}
+
+void AdsLocaleHelper::GetLocaleAfterDelay() {
+  const uint64_t delay = _is_debug ? kDebugGetStatePing :
+      kDefaultGetStatePing;
+
+  const base::Time time = timer_.StartWithPrivacy(delay,
+      base::BindOnce(&AdsLocaleHelper::GetLocale, base::Unretained(this)));
+
+  BLOG(1, "Download catalog " << FriendlyDateAndTime(time));
 }
 
 void AdsLocaleHelper::BuildUrl() {

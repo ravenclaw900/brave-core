@@ -216,7 +216,13 @@ void AdsImpl::InitializeStep5(
   }
 
   ads_serve_->DownloadCatalog();
-  ads_locale_helper_->GetState();
+
+  // TODO(Moritz Haller): Only US for now, add hard-coded region whitelist
+  auto locale = ads_client_->GetLocale();
+  const std::string region_code = brave_l10n::GetRegionCode(locale);
+  if (region_code == kGetStateAllowedForRegion) {
+    ads_locale_helper_->GetLocale();  // TODO(Moritz Haller): better naming, something with "sub-region"? NOLINT
+  }
 }
 
 #if defined(OS_ANDROID)

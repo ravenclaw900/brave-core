@@ -26,18 +26,27 @@ class AdsLocaleHelper {
 
   ~AdsLocaleHelper();
 
-  void GetState();
+  void GetLocale();
 
  private:
   void BuildUrl();
 
-  void OnStateReceived(
+  void OnLocaleReceived(
       const std::string& url,
       const int response_status_code,
       const std::string& response,
       const std::map<std::string, std::string>& headers);
 
+  bool ProcessLocale(
+    const std::string& json);
+
+  void RetryGettingLocale();
+
+  void GetLocaleAfterDelay();
+
   AdsClient* ads_client_;  // NOT OWNED
+  Timer timer_;
+  RetryTimer retry_timer_;
   std::string url_;
 };
 
