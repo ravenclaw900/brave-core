@@ -20,6 +20,7 @@ namespace ads {
 #define DEVELOPMENT_SERVER "https://ads-serve.brave.software"
 
 #define CATALOG_PATH "/v2/catalog"
+#define GETSTATE_PATH "/v5/getstate"
 
 const int kIdleThresholdInSeconds = 15;
 
