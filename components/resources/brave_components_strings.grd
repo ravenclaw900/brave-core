@@ -272,6 +272,9 @@
       <message name="IDS_BRAVE_REWARDS_LOCAL_ADS_PER_HOUR_3" desc="">3 ads per hour</message>
       <message name="IDS_BRAVE_REWARDS_LOCAL_ADS_PER_HOUR_4" desc="">4 ads per hour</message>
       <message name="IDS_BRAVE_REWARDS_LOCAL_ADS_PER_HOUR_5" desc="">5 ads per hour</message>
+      <message name="IDS_BRAVE_REWARDS_LOCAL_ADS_SUBDEVISION_AD_TARGETING_TITLE" desc="">Other Ads Options</message>
+      <message name="IDS_BRAVE_REWARDS_LOCAL_ADS_SUBDEVISION_AD_TARGETING_DESCRIPTION" desc="">Explain what enabling subdevision ("state-level") ad targeting is and emphasize that it still preserves users privacy.</message>
+      <message name="IDS_BRAVE_REWARDS_LOCAL_ADS_SUBDEVISION_AD_TARGETING_LABEL" desc="">Enable state-level targeting</message>
       <message name="IDS_BRAVE_UI_BAT_REWARDS_TEXT" desc="">BAT</message>
       <message name="IDS_BRAVE_UI_BAP_REWARDS_TEXT" desc="">BAP</message>
       <message name="IDS_BRAVE_UI_BAT_POINTS_TEXT" desc="">BAT Points</message>

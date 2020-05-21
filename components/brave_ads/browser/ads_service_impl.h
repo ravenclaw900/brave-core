@@ -77,6 +77,8 @@ class AdsServiceImpl : public AdsService,
 
   void SetAllowAdConversionTracking(
       const bool should_allow) override;
+  void SetAllowSubdivisionAdTargeting(
+      const bool should_allow) override;
 
   void SetAdsPerHour(
       const uint64_t ads_per_hour) override;
@@ -143,6 +145,7 @@ class AdsServiceImpl : public AdsService,
   const std::string GetCountryCode() const override;
 
   bool ShouldAllowAdConversionTracking() const override;
+  bool ShouldAllowSubdivisionAdTargeting() const override;
 
   uint64_t GetAdsPerHour() const override;
   uint64_t GetAdsPerDay() const override;

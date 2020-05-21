@@ -30,10 +30,12 @@ base::SingleThreadTaskExecutor* g_task_executor = nullptr;
   + (__type)__objc_getter { return ads::__cpp_var; } \
   + (void)__objc_setter:(__type)newValue { ads::__cpp_var = newValue; }
 
+static const NSInteger kDefaultAllowSubdivisionAdTargeting = YES;
 static const NSInteger kDefaultNumberOfAdsPerDay = 20;
 static const NSInteger kDefaultNumberOfAdsPerHour = 2;
 
 static NSString * const kAdsEnabledPrefKey = @"BATAdsEnabled";
+static NSString * const kShouldAllowSubdivisionAdTargetingPrefKey = @"BATShouldAllowSubdivisionAdTargeting";
 static NSString * const kNumberOfAdsPerDayKey = @"BATNumberOfAdsPerDay";
 static NSString * const kNumberOfAdsPerHourKey = @"BATNumberOfAdsPerHour";
 
@@ -73,6 +75,7 @@ static NSString * const kNumberOfAdsPerHourKey = @"BATNumberOfAdsPerHour";
     self.prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:[self prefsPath]];
     if (!self.prefs) {
       self.prefs = [[NSMutableDictionary alloc] init];
+      self.BATShouldAllowSubdivisionAdTargeting - kDefaultAllowSubdivisionAdTargeting;
       self.numberOfAllowableAdsPerDay = kDefaultNumberOfAdsPerDay;
       self.numberOfAllowableAdsPerHour = kDefaultNumberOfAdsPerHour;
     }
@@ -184,6 +187,18 @@ BATClassAdsBridge(BOOL, isDebug, setDebug, _is_debug)
 {
   return true;
 }
+
+- (BOOL)shouldAllowSubdivisionAdTargeting
+{
+  return [(NSNumber *)self.prefs[kshouldAllowSubdivisionAdTargetingPrefKey] boolValue];
+}
+
+- (void)SetAllowSubdivisionAdTargeting:(BOOL)shouldAllowSubdivisionAdTargeting
+{
+  self.prefs[kshouldAllowSubdivisionAdTargetingPrefKey] = @(shouldAllowSubdivisionAdTargeting);
+  [self savePrefs];
+}
+
 
 - (NSInteger)numberOfAllowableAdsPerDay
 {

@@ -36,6 +36,7 @@ class BatAdsClientMojoBridge
   bool CanShowBackgroundNotifications() const override;
   uint64_t GetAdsPerHour() const override;
   uint64_t GetAdsPerDay() const override;
+  bool ShouldAllowSubdivisionAdTargeting() const override;
 
   void GetClientInfo(
       ads::ClientInfo* info) const override;

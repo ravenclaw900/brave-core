@@ -26,6 +26,8 @@ interface BatAdsClient {
   [Sync]
   GetAdsPerDay() => (uint64 ads_per_day);
   [Sync]
+  ShouldAllowSubdivisionAdTargeting() => (bool should_allow);
+  [Sync]
   IsNetworkConnectionAvailable() => (bool available);
   [Sync]
   GetClientInfo(string client_info) => (string client_info);

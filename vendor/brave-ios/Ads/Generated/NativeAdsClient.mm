@@ -22,6 +22,9 @@ bool NativeAdsClient::IsEnabled() const {
 bool NativeAdsClient::ShouldAllowAdConversionTracking() const {
   return [bridge_ shouldAllowAdConversionTracking];
 }
+bool NativeAdsClient::ShouldAllowSubdivisionAdTargeting() const {
+  return [bridge_ shouldAllowSubdivisionAdTargeting];
+}
 
 uint64_t NativeAdsClient::GetAdsPerDay() const {
   return [bridge_ getAdsPerDay];

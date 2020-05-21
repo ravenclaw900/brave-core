@@ -112,6 +112,7 @@ const rewardsReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State
 
       state.adsData.adsEnabled = action.payload.adsData.adsEnabled
       state.adsData.adsPerHour = action.payload.adsData.adsPerHour
+      state.adsData.shouldAllowSubdivisionAdTargeting = action.payload.adsData.shouldAllowSubdivisionAdTargeting
       state.adsData.adsUIEnabled = action.payload.adsData.adsUIEnabled
       state.adsData.adsIsSupported = action.payload.adsData.adsIsSupported
       break

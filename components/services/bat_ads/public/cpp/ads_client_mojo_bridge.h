@@ -53,6 +53,10 @@ class AdsClientMojoBridge
       GetAdsPerHourCallback callback) override;
   bool GetAdsPerDay(
       uint64_t* out_ads_per_day) override;
+  bool ShouldAllowSubdivisionAdTargeting(
+      bool* should_allow) override;
+  void ShouldAllowSubdivisionAdTargeting(
+      ShouldAllowSubdivisionAdTargetingCallback callback) override;
   void GetAdsPerDay(
       GetAdsPerDayCallback callback) override;
   bool IsNetworkConnectionAvailable(

@@ -99,6 +99,16 @@ uint64_t BatAdsClientMojoBridge::GetAdsPerDay() const {
   return ads_per_day;
 }
 
+bool BatAdsClientMojoBridge::ShouldAllowSubdivisionAdTargeting() const {
+  if (!connected()) {
+    return false;
+  }
+
+  bool should_allow;
+  bat_ads_client_->ShouldAllowSubdivisionAdTargeting(&should_allow);
+  return should_allow;
+}
+
 void BatAdsClientMojoBridge::SetIdleThreshold(
     const int threshold) {
   if (!connected()) {

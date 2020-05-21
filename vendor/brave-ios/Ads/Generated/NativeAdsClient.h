@@ -19,6 +19,7 @@ class NativeAdsClient : public ads::AdsClient {
 
   bool IsEnabled() const override;
   bool ShouldAllowAdConversionTracking() const override;
+  bool ShouldAllowSubdivisionAdTargeting() const override;
   uint64_t GetAdsPerDay() const override;
   uint64_t GetAdsPerHour() const override;
   void GetClientInfo(ads::ClientInfo * info) const override;

@@ -125,6 +125,22 @@ void AdsClientMojoBridge::GetAdsPerDay(GetAdsPerDayCallback callback) {
   std::move(callback).Run(ads_client_->GetAdsPerDay());
 }
 
+bool AdsClientMojoBridge::ShouldAllowSubdivisionAdTargeting(
+    bool* should_allow) {
+  if (!should_allow) {
+    return false;
+  }
+
+  *should_allow = ads_client_->ShouldAllowSubdivisionAdTargeting();
+  return true;
+}
+
+void AdsClientMojoBridge::ShouldAllowSubdivisionAdTargeting(
+    ShouldAllowSubdivisionAdTargetingCallback callback) {
+  std::move(callback).Run(ads_client_->ShouldAllowSubdivisionAdTargeting());
+}
+
+
 bool AdsClientMojoBridge::IsNetworkConnectionAvailable(
     bool* out_is_available) {
   DCHECK(out_is_available);

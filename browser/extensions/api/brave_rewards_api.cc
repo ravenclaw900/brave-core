@@ -610,6 +610,8 @@ ExtensionFunction::ResponseAction BraveRewardsSaveAdsSettingFunction::Run() {
       const auto is_enabled =
           params->value == "true" && ads_service_->IsSupportedLocale();
       ads_service_->SetEnabled(is_enabled);
+    } else if (params->key == "shouldAllowSubdivisionAdTargeting") {
+      ads_service_->SetAllowSubdivisionAdTargeting(params->value == "true");
     }
   }
   return RespondNow(NoArguments());

@@ -60,6 +60,10 @@ class ADS_EXPORT AdsClient {
   // Should return the maximum number of ads that can be shown per day
   virtual uint64_t GetAdsPerDay() const = 0;
 
+  // Should return |true| if subregion targeting is enabled; otherwise,
+  // should return |false|
+  virtual bool ShouldAllowSubdivisionAdTargeting() const = 0;
+
   // Set the idle threshold specified in seconds for how long a user should be
   // idle before |OnUnIdle| is called. This call is optional for mobile devices
   virtual void SetIdleThreshold(

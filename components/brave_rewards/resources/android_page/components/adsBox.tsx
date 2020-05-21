@@ -9,7 +9,7 @@ import { connect } from 'react-redux'
 // Components
 import BoxMobile, { Props as BoxMobileProps } from '../../ui/components/mobile/boxMobile'
 import { List, NextContribution, Tokens } from '../../ui/components'
-import { Grid, Column, Select, ControlWrapper } from 'brave-ui/components'
+import { Grid, Column, Select, ControlWrapper, Checkbox } from 'brave-ui/components'
 import AdsOnboarding from './adsOnboarding'
 import {
   StyledListContent,
@@ -31,10 +31,15 @@ class AdsBox extends React.Component<Props, {}> {
 
   onAdsSettingChange = (key: string, value: boolean) => {
     let newValue: any = value
-    const { adsEnabled } = this.props.rewardsData.adsData
+    const {
+      adsEnabled,
+      shouldAllowSubdivisionAdTargeting
+    } = this.props.rewardsData.adsData
 
     if (key === 'adsEnabled') {
       newValue = !adsEnabled
+    } else if (key === 'shouldAllowSubdivisionAdTargeting') {
+      newValue = !shouldAllowSubdivisionAdTargeting
     }
 
     this.props.actions.onAdsSettingSave(key, newValue)
@@ -45,7 +50,10 @@ class AdsBox extends React.Component<Props, {}> {
       return null
     }
 
-    const { adsPerHour } = this.props.rewardsData.adsData
+    const {
+      adsPerHour,
+      shouldAllowSubdivisionAdTargeting
+    } = this.props.rewardsData.adsData
 
     return (
       <Grid columns={1} customStyle={{ maxWidth: '270px', margin: '0 auto' }}>
@@ -63,6 +71,18 @@ class AdsBox extends React.Component<Props, {}> {
                 )
               })}
             </Select>
+          </ControlWrapper>
+          <ControlWrapper text={getLocale('adsAllowSubdivisionTargetingTitle')}>
+            <Checkbox
+              value={{
+                shouldAllowSubdivisionAdTargeting: shouldAllowSubdivisionAdTargeting
+              }}
+              multiple={true}
+              onChange={this.onAdsSettingChange}
+            >
+              <div data-key='shouldAllowSubdivisionAdTargeting'>{getLocale('adsAllowSubdivisionTargetingLabel')}</div>
+            </Checkbox>
+            <div>{getLocale('adsAllowSubdivisionTargetingDescription')}</div>
           </ControlWrapper>
         </Column>
       </Grid>

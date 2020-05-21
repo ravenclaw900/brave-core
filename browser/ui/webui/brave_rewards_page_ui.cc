@@ -307,6 +307,8 @@ class RewardsDOMHandler : public WebUIMessageHandler,
 namespace {
 
 const int kDaysOfAdsHistory = 7;
+const char kShouldAllowSubdivisionAdTargeting[] =
+    "shouldAllowSubdivisionAdTargeting";
 
 }  // namespace
 
@@ -1103,6 +1105,11 @@ void RewardsDOMHandler::GetAdsData(const base::ListValue *args) {
   auto ads_per_hour = ads_service_->GetAdsPerHour();
   ads_data.SetInteger("adsPerHour", ads_per_hour);
 
+  const auto should_allow_subdivision_ad_targeting =
+      ads_service_->ShouldAllowSubdivisionAdTargeting();
+  ads_data.SetBoolean(kShouldAllowSubdivisionAdTargeting,
+      should_allow_subdivision_ad_targeting);
+
 #if BUILDFLAG(BRAVE_ADS_ENABLED)
     auto ads_ui_enabled = true;
 #else
@@ -1322,6 +1329,8 @@ void RewardsDOMHandler::SaveAdsSetting(const base::ListValue* args) {
     ads_service_->SetEnabled(is_enabled);
   } else if (key == "adsPerHour") {
     ads_service_->SetAdsPerHour(std::stoull(value));
+  } else if (key == kShouldAllowSubdivisionAdTargeting) {
+    ads_service_->SetAllowSubdivisionAdTargeting(value == "true");
   }
 
   base::ListValue* emptyArgs = nullptr;

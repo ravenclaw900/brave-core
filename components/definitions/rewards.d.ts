@@ -223,6 +223,7 @@ declare namespace Rewards {
   export interface AdsData {
     adsEnabled: boolean
     adsPerHour: number
+    shouldAllowSubdivisionAdTargeting: boolean
     adsUIEnabled: boolean
     adsIsSupported: boolean
     adsEstimatedPendingRewards: number

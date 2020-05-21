@@ -17,7 +17,7 @@ import {
   ShowAdsHistory,
   Tokens
 } from '../../ui/components'
-import { Grid, Column, Select, ControlWrapper } from 'brave-ui/components'
+import { Grid, Column, Select, ControlWrapper, Checkbox } from 'brave-ui/components'
 
 // Utils
 import * as utils from '../utils'
@@ -78,10 +78,15 @@ class AdsBox extends React.Component<Props, State> {
 
   onAdsSettingChange = (key: string, value: boolean) => {
     let newValue: any = value
-    const { adsEnabled } = this.props.rewardsData.adsData
+    const {
+      adsEnabled,
+      shouldAllowSubdivisionAdTargeting
+    } = this.props.rewardsData.adsData
 
     if (key === 'adsEnabled') {
       newValue = !adsEnabled
+    } else if (key === 'shouldAllowSubdivisionAdTargeting') {
+      newValue = !shouldAllowSubdivisionAdTargeting
     }
 
     this.props.actions.onAdsSettingSave(key, newValue)
@@ -92,7 +97,10 @@ class AdsBox extends React.Component<Props, State> {
       return null
     }
 
-    const { adsPerHour } = this.props.rewardsData.adsData
+    const {
+      adsPerHour,
+      shouldAllowSubdivisionAdTargeting
+    } = this.props.rewardsData.adsData
 
     return (
       <Grid columns={1} customStyle={{ margin: '0 auto' }}>
@@ -110,6 +118,18 @@ class AdsBox extends React.Component<Props, State> {
                 )
               })}
             </Select>
+          </ControlWrapper>
+          <ControlWrapper text={getLocale('adsAllowSubdivisionTargetingTitle')}>
+            <Checkbox
+              value={{
+                shouldAllowSubdivisionAdTargeting: shouldAllowSubdivisionAdTargeting
+              }}
+              multiple={true}
+              onChange={this.onAdsSettingChange}
+            >
+              <div data-key='shouldAllowSubdivisionAdTargeting'>{getLocale('adsAllowSubdivisionTargetingLabel')}</div>
+            </Checkbox>
+            <div>{getLocale('adsAllowSubdivisionTargetingDescription')}</div>
           </ControlWrapper>
         </Column>
       </Grid>

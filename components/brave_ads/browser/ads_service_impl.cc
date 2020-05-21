@@ -329,6 +329,11 @@ void AdsServiceImpl::SetAllowAdConversionTracking(
   SetBooleanPref(prefs::kShouldAllowAdConversionTracking, should_allow);
 }
 
+void AdsServiceImpl::SetAllowSubdivisionAdTargeting(
+    const bool should_allow) {
+  SetBooleanPref(prefs::kShouldAllowSubdivisionAdTargeting, should_allow);
+}
+
 void AdsServiceImpl::SetAdsPerHour(
     const uint64_t ads_per_hour) {
   SetUint64Pref(prefs::kAdsPerHour, ads_per_hour);
@@ -483,6 +488,10 @@ bool AdsServiceImpl::IsEnabled() const {
 
 bool AdsServiceImpl::ShouldAllowAdConversionTracking() const {
   return GetBooleanPref(prefs::kShouldAllowAdConversionTracking);
+}
+
+bool AdsServiceImpl::ShouldAllowSubdivisionAdTargeting() const {
+  return GetBooleanPref(prefs::kShouldAllowSubdivisionAdTargeting);
 }
 
 uint64_t AdsServiceImpl::GetAdsPerHour() const {

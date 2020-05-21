@@ -33,6 +33,8 @@ class MockAdsClient : public AdsClient {
 
   MOCK_CONST_METHOD0(GetAdsPerDay, uint64_t());
 
+  MOCK_CONST_METHOD0(ShouldAllowSubdivisionAdTargeting, bool());
+
   MOCK_METHOD1(SetIdleThreshold, void(
       const int threshold));
 
