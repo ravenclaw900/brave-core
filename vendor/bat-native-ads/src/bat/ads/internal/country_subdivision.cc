@@ -39,8 +39,18 @@ void CountrySubdivision::FetchCountrySubdivisionIfAllowedForRegion() {
   }
 }
 
-std::string CountrySubdivision::GetCountrySubdivision() {
+std::string CountrySubdivision::GetCountrySubdivision() const {
   return ads_client_->GetCountrySubdivision();
+}
+
+bool CountrySubdivision::IsValidCode(
+    const std::string& country_subdivision_code) const {
+  // TODO(Moritz Haller): Maybe compare against whitelist?
+  if (country_subdivision_code.length() > 2) {
+    return true;
+  }
+
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

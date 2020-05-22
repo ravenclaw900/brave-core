@@ -28,7 +28,10 @@ class CountrySubdivision {
 
   void FetchCountrySubdivisionIfAllowedForRegion();
 
-  std::string GetCountrySubdivision();
+  std::string GetCountrySubdivision() const;  // TODO(Moritz Haller): Understand use of const here  NOLINT
+
+  bool IsValidCode(
+    const std::string& country_subdivision_code) const;  // TODO(Moritz Haller): Understand use of const here  NOLINT
 
  private:
   void BuildUrl();
