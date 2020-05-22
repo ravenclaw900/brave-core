@@ -26,6 +26,8 @@ interface BatAdsClient {
   [Sync]
   GetAdsPerDay() => (uint64 ads_per_day);
   [Sync]
+  GetCountrySubdivision() => (string country_subdivision);
+  [Sync]
   ShouldAllowSubdivisionAdTargeting() => (bool should_allow);
   [Sync]
   IsNetworkConnectionAvailable() => (bool available);
@@ -57,6 +59,7 @@ interface BatAdsClient {
   GetCreativeAdNotifications(array<string> categories) => (int32 result, array<string> categories, array<string> json_list);
   GetAdConversions() => (int32 result, array<string> json_list);
   Log(string file, int32 line, int32 verbose_level, string message);
+  SetCountrySubdivision(string country_subdivision);
 };
 
 interface BatAds {

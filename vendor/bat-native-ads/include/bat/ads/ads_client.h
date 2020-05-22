@@ -60,6 +60,13 @@ class ADS_EXPORT AdsClient {
   // Should return the maximum number of ads that can be shown per day
   virtual uint64_t GetAdsPerDay() const = 0;
 
+  // Should return the country subdivision
+  virtual std::string GetCountrySubdivision() const = 0;
+
+  // Should return the country subdivision
+  virtual void SetCountrySubdivision(
+      const std::string&) = 0;
+
   // Should return |true| if subregion targeting is enabled; otherwise,
   // should return |false|
   virtual bool ShouldAllowSubdivisionAdTargeting() const = 0;

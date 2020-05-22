@@ -125,6 +125,23 @@ void AdsClientMojoBridge::GetAdsPerDay(GetAdsPerDayCallback callback) {
   std::move(callback).Run(ads_client_->GetAdsPerDay());
 }
 
+bool AdsClientMojoBridge::GetCountrySubdivision(
+    std::string* out_country_subdivision) {
+  DCHECK(out_country_subdivision);
+  *out_country_subdivision = ads_client_->GetCountrySubdivision();
+  return true;
+}
+
+void AdsClientMojoBridge::GetCountrySubdivision(
+    GetCountrySubdivisionCallback callback) {
+  std::move(callback).Run(ads_client_->GetCountrySubdivision());
+}
+
+void AdsClientMojoBridge::SetCountrySubdivision(
+    const std::string& country_subdivision) {
+  ads_client_->SetCountrySubdivision(std::move(country_subdivision));
+}
+
 bool AdsClientMojoBridge::ShouldAllowSubdivisionAdTargeting(
     bool* should_allow) {
   if (!should_allow) {

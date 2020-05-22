@@ -88,6 +88,7 @@ AdsImpl::AdsImpl(AdsClient* ads_client)
       bundle_(std::make_unique<Bundle>(this, ads_client)),
       ads_serve_(std::make_unique<AdsServe>(this, ads_client, bundle_.get())),
       frequency_capping_(std::make_unique<FrequencyCapping>(client_.get())),
+      country_subdivision_(std::make_unique<CountrySubdivision>(ads_client)),
       ads_locale_helper_(std::make_unique<AdsLocaleHelper>(ads_client)),
       ad_conversions_(std::make_unique<AdConversions>(
           this, ads_client, client_.get())),
@@ -216,13 +217,7 @@ void AdsImpl::InitializeStep5(
   }
 
   ads_serve_->DownloadCatalog();
-
-  // TODO(Moritz Haller): Only US for now, add hard-coded region whitelist
-  auto locale = ads_client_->GetLocale();
-  const std::string region_code = brave_l10n::GetRegionCode(locale);
-  if (region_code == kGetStateAllowedForRegion) {
-    ads_locale_helper_->GetLocale();  // TODO(Moritz Haller): better naming, something with "sub-region"? NOLINT
-  }
+  country_subdivision_->FetchCountrySubdivisionIfAllowedForRegion();
 }
 
 #if defined(OS_ANDROID)
@@ -644,6 +639,8 @@ void AdsImpl::OnPageLoaded(
   }
 
   ExtractPurchaseIntentSignal(url);
+
+  BLOG(1, "*** DEBUG " << country_subdivision_->GetCountrySubdivision());
 
   if (SameSite(url, last_shown_ad_notification_.target_url)) {
     BLOG(1, "Visited URL matches the last shown ad notification");

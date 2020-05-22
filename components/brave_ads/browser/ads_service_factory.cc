@@ -83,7 +83,8 @@ void AdsServiceFactory::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kShouldAllowAdConversionTracking, true);
 
   registry->RegisterBooleanPref(prefs::kShouldAllowSubdivisionAdTargeting,
-      true);
+      false);
+  registry->RegisterStringPref(prefs::kCountrySubdivision, "");
 
   registry->RegisterUint64Pref(prefs::kAdsPerHour, 2);
   registry->RegisterUint64Pref(prefs::kAdsPerDay, 20);

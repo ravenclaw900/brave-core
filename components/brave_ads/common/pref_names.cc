@@ -26,9 +26,13 @@ const char kHasAdsP3AState[] = "brave.brave_ads.has_p3a_state";
 // Stores the maximum amount of ads per hour
 const char kAdsPerHour[] = "brave.brave_ads.ads_per_hour";
 
-// Stores whether Brave ads should allow subregion targeting
+// Stores whether Brave ads should allow targeting based on country subdevision
 const char kShouldAllowSubdivisionAdTargeting[] =
     "brave.brave_ads.should_allow_subdivision_ad_targeting";
+
+// Stores the country subdevision for targeting
+const char kCountrySubdivision[] =
+    "brave.brave_ads.country_subdivision";
 
 // Stores the maximum amount of ads per day
 const char kAdsPerDay[] = "brave.brave_ads.ads_per_day";

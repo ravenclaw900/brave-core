@@ -36,6 +36,7 @@ static const NSInteger kDefaultNumberOfAdsPerHour = 2;
 
 static NSString * const kAdsEnabledPrefKey = @"BATAdsEnabled";
 static NSString * const kShouldAllowSubdivisionAdTargetingPrefKey = @"BATShouldAllowSubdivisionAdTargeting";
+static NSString * const kCountrySubdivisionPrefKey = @"BATCountrySubdivision";
 static NSString * const kNumberOfAdsPerDayKey = @"BATNumberOfAdsPerDay";
 static NSString * const kNumberOfAdsPerHourKey = @"BATNumberOfAdsPerHour";
 
@@ -190,15 +191,20 @@ BATClassAdsBridge(BOOL, isDebug, setDebug, _is_debug)
 
 - (BOOL)shouldAllowSubdivisionAdTargeting
 {
-  return [(NSNumber *)self.prefs[kshouldAllowSubdivisionAdTargetingPrefKey] boolValue];
+  return [(NSNumber *)self.prefs[kShouldAllowSubdivisionAdTargetingPrefKey] boolValue];
 }
 
 - (void)SetAllowSubdivisionAdTargeting:(BOOL)shouldAllowSubdivisionAdTargeting
 {
-  self.prefs[kshouldAllowSubdivisionAdTargetingPrefKey] = @(shouldAllowSubdivisionAdTargeting);
+  self.prefs[kShouldAllowSubdivisionAdTargetingPrefKey] = @(shouldAllowSubdivisionAdTargeting);
   [self savePrefs];
 }
 
+- (void)SetCountrySubdivision:(NSString *)countrySubdivision
+{
+  self.prefs[kCountrySubdivisionPrefKey] = @(countrySubdivision);
+  [self savePrefs];
+}
 
 - (NSInteger)numberOfAllowableAdsPerDay
 {

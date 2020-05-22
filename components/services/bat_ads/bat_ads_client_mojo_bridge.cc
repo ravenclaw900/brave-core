@@ -99,6 +99,25 @@ uint64_t BatAdsClientMojoBridge::GetAdsPerDay() const {
   return ads_per_day;
 }
 
+std::string BatAdsClientMojoBridge::GetCountrySubdivision() const {
+  if (!connected()) {
+    return 0;
+  }
+
+  std::string country_subdivision;
+  bat_ads_client_->GetCountrySubdivision(&country_subdivision);
+  return country_subdivision;
+}
+
+void BatAdsClientMojoBridge::SetCountrySubdivision(
+    const std::string& country_subdivision) {
+  if (!connected()) {
+    return;
+  }
+
+  bat_ads_client_->SetCountrySubdivision(country_subdivision);
+}
+
 bool BatAdsClientMojoBridge::ShouldAllowSubdivisionAdTargeting() const {
   if (!connected()) {
     return false;

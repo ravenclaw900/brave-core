@@ -334,6 +334,11 @@ void AdsServiceImpl::SetAllowSubdivisionAdTargeting(
   SetBooleanPref(prefs::kShouldAllowSubdivisionAdTargeting, should_allow);
 }
 
+void AdsServiceImpl::SetCountrySubdivision(
+    const std::string& country_subdivision) {
+  SetStringPref(prefs::kCountrySubdivision, country_subdivision);
+}
+
 void AdsServiceImpl::SetAdsPerHour(
     const uint64_t ads_per_hour) {
   SetUint64Pref(prefs::kAdsPerHour, ads_per_hour);
@@ -500,6 +505,10 @@ uint64_t AdsServiceImpl::GetAdsPerHour() const {
 
 uint64_t AdsServiceImpl::GetAdsPerDay() const {
   return GetUint64Pref(prefs::kAdsPerDay);
+}
+
+std::string AdsServiceImpl::GetCountrySubdivision() const {
+  return GetStringPref(prefs::kCountrySubdivision);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
