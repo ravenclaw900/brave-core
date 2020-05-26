@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "bat/confirmations/confirmations_client.h"
 #include "bat/ledger/internal/contribution/contribution.h"
 #include "bat/ledger/internal/database/database.h"
@@ -458,6 +459,8 @@ class LedgerImpl : public ledger::Ledger {
   void DeleteActivityInfo(
       const std::string& publisher_key,
       ledger::ResultCallback callback);
+
+  bool ShouldFetchServerPublisherInfo(base::Time last_updated_time);
 
   void SearchPublisherList(
       const std::string& publisher_key,

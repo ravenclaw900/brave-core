@@ -36,6 +36,10 @@ Publisher::Publisher(bat_ledger::LedgerImpl* ledger):
 Publisher::~Publisher() {
 }
 
+bool Publisher::ShouldFetchServerPublisherInfo(base::Time last_updated_time) {
+  return server_publisher_fetcher_->IsExpired(last_updated_time);
+}
+
 bool Publisher::ShouldFetchServerPublisherInfo(
     ledger::ServerPublisherInfo* server_info) {
   return server_publisher_fetcher_->IsExpired(server_info);
@@ -50,13 +54,23 @@ void Publisher::FetchServerPublisherInfo(
 void Publisher::RefreshPublisher(
     const std::string& publisher_key,
     ledger::OnRefreshPublisherCallback callback) {
-  server_publisher_fetcher_->Fetch(
-    publisher_key,
-    [callback](auto server_info) {
-      callback(server_info
-          ? server_info->status
-          : ledger::PublisherStatus::NOT_VERIFIED);
-    });
+  // Bypass cache and unconditionally fetch the latest info
+  // for the specified publisher.
+  server_publisher_fetcher_->Fetch(publisher_key,
+      [this, callback](auto server_info) {
+        auto status = server_info
+            ? server_info->status
+            : ledger::PublisherStatus::NOT_VERIFIED;
+
+        // If, after refresh, the publisher is now verified
+        // attempt to process any pending contributions for
+        // unverified publishers.
+        if (status == ledger::PublisherStatus::VERIFIED) {
+          ledger_->ContributeUnverifiedPublishers();
+        }
+
+        callback(status);
+      });
 }
 
 void Publisher::SetPublisherServerListTimer(const bool rewards_enabled) {

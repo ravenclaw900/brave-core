@@ -12,6 +12,7 @@
 #include "bat/ledger/internal/database/database_pending_contribution.h"
 #include "bat/ledger/internal/database/database_util.h"
 #include "bat/ledger/internal/ledger_impl.h"
+#include "bat/ledger/internal/publisher/publisher_status_helper.h"
 #include "bat/ledger/internal/static_values.h"
 
 using std::placeholders::_1;
@@ -453,7 +454,7 @@ void DatabasePendingContribution::GetAllRecords(
   const std::string query = base::StringPrintf(
     "SELECT pc.pending_contribution_id, pi.publisher_id, pi.name, "
     "pi.url, pi.favIcon, spi.status, pi.provider, pc.amount, pc.added_date, "
-    "pc.viewing_id, pc.type "
+    "pc.viewing_id, pc.type, spi.updated_at "
     "FROM %s as pc "
     "INNER JOIN publisher_info AS pi ON pc.publisher_id = pi.publisher_id "
     "LEFT JOIN server_publisher_info AS spi "
@@ -475,7 +476,8 @@ void DatabasePendingContribution::GetAllRecords(
       ledger::DBCommand::RecordBindingType::DOUBLE_TYPE,
       ledger::DBCommand::RecordBindingType::INT64_TYPE,
       ledger::DBCommand::RecordBindingType::STRING_TYPE,
-      ledger::DBCommand::RecordBindingType::INT_TYPE
+      ledger::DBCommand::RecordBindingType::INT_TYPE,
+      ledger::DBCommand::RecordBindingType::INT64_TYPE
   };
 
   transaction->commands.push_back(std::move(command));
@@ -499,6 +501,7 @@ void DatabasePendingContribution::OnGetAllRecords(
     return;
   }
 
+  braveledger_publisher::PublisherStatusMap status_map;
   ledger::PendingContributionInfoList list;
   for (auto const& record : response->result->get_records()) {
     auto info = ledger::PendingContributionInfo::New();
@@ -521,13 +524,17 @@ void DatabasePendingContribution::OnGetAllRecords(
         info->added_date +
         braveledger_ledger::_pending_contribution_expiration;
 
-    // TODO(zenparsing) [blocking] server_publisher_info may have
-    // outdated or missing records.
+    status_map[info->publisher_key] =
+        {info->status, GetInt64Column(record_pointer, 11)};
 
     list.push_back(std::move(info));
   }
 
-  callback(std::move(list));
+  braveledger_publisher::RefreshPublisherStatus(
+      ledger_,
+      std::move(status_map),
+      std::move(list),
+      callback);
 }
 
 void DatabasePendingContribution::DeleteRecord(

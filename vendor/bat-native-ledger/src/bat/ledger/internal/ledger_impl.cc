@@ -1300,6 +1300,10 @@ void LedgerImpl::DeleteActivityInfo(
   bat_database_->DeleteActivityInfo(publisher_key, callback);
 }
 
+bool LedgerImpl::ShouldFetchServerPublisherInfo(base::Time last_updated_time) {
+  return bat_publisher_->ShouldFetchServerPublisherInfo(last_updated_time);
+}
+
 void LedgerImpl::SearchPublisherList(
     const std::string& publisher_key,
     ledger::SearchPublisherListCallback callback) {

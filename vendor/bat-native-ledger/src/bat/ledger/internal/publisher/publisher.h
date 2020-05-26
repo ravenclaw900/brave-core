@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/time/time.h"
 #include "bat/ledger/ledger.h"
 
 namespace bat_ledger {
@@ -28,6 +29,8 @@ class Publisher {
   explicit Publisher(bat_ledger::LedgerImpl* ledger);
 
   ~Publisher();
+
+  bool ShouldFetchServerPublisherInfo(base::Time last_updated_time);
 
   bool ShouldFetchServerPublisherInfo(
       ledger::ServerPublisherInfo* server_info);

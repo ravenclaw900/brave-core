@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "bat/ledger/ledger.h"
 
 namespace bat_ledger {
@@ -27,6 +28,8 @@ class ServerPublisherFetcher {
   ServerPublisherFetcher& operator=(const ServerPublisherFetcher&) = delete;
 
   ~ServerPublisherFetcher();
+
+  bool IsExpired(base::Time last_update_time);
 
   bool IsExpired(ledger::ServerPublisherInfo* server_info);
 
@@ -49,6 +52,9 @@ class ServerPublisherFetcher {
       const std::string& publisher_key,
       int response_status_code,
       const std::string& response);
+
+  ledger::ServerPublisherInfoPtr GetServerInfoForEmptyResponse(
+      const std::string& publisher_key);
 
   CallbackVector GetCallbacks(const std::string& publisher_key);
 

@@ -97,12 +97,22 @@ void PublisherListUpdater::OnFetchCompleted(
 
   BLOG(1, "Resetting publisher prefix list table");
 
-  ledger_->ResetPublisherList(std::move(reader), [](ledger::Result result) {
-    if (result != ledger::Result::LEDGER_OK) {
-      BLOG(0, "Error updating database with publisher prefix list: "
-          << result);
-    }
-  });
+  ledger_->ResetPublisherList(std::move(reader),
+      [this](ledger::Result result) {
+        if (result != ledger::Result::LEDGER_OK) {
+          BLOG(0, "Error updating publisher prefix list table: " << result);
+          return;
+        }
+        // TODO(zenparsing): Ideally this component would not know
+        // anything about contributions and we'd hook this up elsewhere.
+        // We could invoke a callback and allow publisher.cc to execute
+        // this call, but given the current state of publisher.cc (and
+        // callbacks in general) we'll have to leave it like this for now.
+
+        // Attempt to reprocess any contributions for previously
+        // unverified publishers that are now verified.
+        ledger_->ContributeUnverifiedPublishers();
+      });
 
   if (auto_update_) {
     StartFetchTimer(FROM_HERE, GetAutoUpdateDelay());

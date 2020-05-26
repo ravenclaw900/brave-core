@@ -120,7 +120,8 @@ void DatabasePublisherList::Search(
         return;
       }
     }
-    BLOG(0, "Unexpected database result while searching publisher prefix list.");
+    BLOG(0, "Unexpected database result while searching "
+        "publisher prefix list.");
     callback(false);
   });
 }
